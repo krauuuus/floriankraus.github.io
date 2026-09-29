@@ -343,6 +343,13 @@ function renderPage(id) {
   if (id === 'cbdc')    renderCbdc();
 }
 
+// Hash-based deep linking (e.g. app.html#cbdc)
+(function() {
+  const valid = ['buckets','factor','fifff','cbdc','home'];
+  const h = location.hash.replace('#','');
+  if (valid.includes(h)) showPage(h);
+})();
+
 // ── Plotly helpers ───────────────────────────────────────────────────────────
 const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const GRID  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';

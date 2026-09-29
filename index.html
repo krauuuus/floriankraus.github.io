@@ -68,6 +68,15 @@ body { margin:0; font-family:'Inter',system-ui,sans-serif; font-size:15px;
               padding:18px 18px 14px; border-left:3px solid var(--accent); }
 .chart-card-title { font-size:12px; font-weight:700; color:var(--text); margin:0 0 2px; }
 .chart-card-note { font-size:11px; color:var(--muted2); margin:6px 0 0; font-style:italic; line-height:1.5; }
+.chart-explore {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:600; color:var(--accent);
+  text-decoration:none; letter-spacing:.05em; text-transform:uppercase;
+  margin-top:10px; opacity:.7; transition:opacity .2s;
+}
+.chart-explore::after { content:"→"; display:inline-block; transition:transform .2s; }
+.chart-explore:hover { opacity:1; }
+.chart-explore:hover::after { transform:translateX(3px); }
 
 /* ── Footer ── */
 .footer { border-top:1px solid var(--border); padding:36px 24px; max-width:820px; margin:0 auto;
@@ -91,7 +100,7 @@ body { margin:0; font-family:'Inter',system-ui,sans-serif; font-size:15px;
     <li><a href="#research">Research</a></li>
     <li><a href="papers.html">Papers</a></li>
     <li><a href="cv.html">CV</a></li>
-    <li><a href="#data">Data</a></li>
+    <li><a href="app.html">Data</a></li>
     <li><a href="resources.html">Resources</a></li>
   </ul>
 </nav>
@@ -144,22 +153,26 @@ body { margin:0; font-family:'Inter',system-ui,sans-serif; font-size:15px;
     <div class="chart-card" style="border-left-color:#ef4444;">
       <p class="chart-card-title">Financial Instability &amp; Fragility in Crypto-Markets</p>
       <div id="chart-fifff" style="width:100%;height:300px;"></div>
-      <p class="chart-card-note">Monthly share of assets classified as Financially Instable (FI) or Fragile (FF) — 18-month rolling quantile regression on 7 fundamentals.</p>
+      <p class="chart-card-note">Monthly share of assets classified as Financially Instable (FI) or Fragile (FF) — rolling quantile regression on 7 fundamentals. See Kraus (2025).</p>
+      <a href="app.html#fifff" class="chart-explore">Explore FI/FF data</a>
     </div>
     <div class="chart-card" style="border-left-color:#d97706;">
       <p class="chart-card-title">Crypto-Market Common Factor (DFM PC1) — Cumulative</p>
       <div id="chart-factor" style="width:100%;height:300px;"></div>
-      <p class="chart-card-note">Cumulative common factor extracted by Dynamic Factor Model from 7 reference cryptocurrencies. Source: CRIX (Humboldt-Universität).</p>
+      <p class="chart-card-note">Cumulative common factor from a Dynamic Factor Model following Che et al. (Crypto-Cycle &amp; US Monetary Policy) — 7 reference cryptocurrencies.</p>
+      <a href="app.html#factor" class="chart-explore">Explore factor data</a>
     </div>
     <div class="chart-card" style="border-left-color:#16a34a;">
       <p class="chart-card-title">Central Bank CBDC Stance &amp; Sentiment — Jev model (3M MA)</p>
       <div id="chart-cbdc" style="width:100%;height:300px;"></div>
-      <p class="chart-card-note">Monthly stance and sentiment indices from BIS central bank speeches, classified by Jev LLM model. Score = Pro% − Anti%.</p>
+      <p class="chart-card-note">Monthly indices from 635 BIS central bank speeches (2018–2026), classified by the Jev LLM model. See Kraus &amp; Lamagnère (2025).</p>
+      <a href="app.html#cbdc" class="chart-explore">Explore CBDC data</a>
     </div>
     <div class="chart-card" style="border-left-color:#4f46e5;">
-      <p class="chart-card-title">BTC Transaction Flows — Retail vs Institutional (Binance)</p>
+      <p class="chart-card-title">BTC Transaction Flows by Size Group (Binance)</p>
       <div id="chart-buckets" style="width:100%;height:300px;"></div>
-      <p class="chart-card-note">Monthly Binance aggTrade volume share by size group. Retail &lt;$10k · Mid $10k–$100k · Institutional &gt;$100k.</p>
+      <p class="chart-card-note">Monthly Binance aggTrade volume share by transaction size. &lt;$10k · $10k–$100k · &gt;$100k. See Kraus (2025).</p>
+      <a href="app.html#buckets" class="chart-explore">Explore transaction flows</a>
     </div>
   </div>
 </section>
@@ -209,8 +222,8 @@ body { margin:0; font-family:'Inter',system-ui,sans-serif; font-size:15px;
   // 3. CBDC stance + sentiment lines
   const c = CHART_DATA.cbdc;
   Plotly.newPlot('chart-cbdc', [
-    { x:c.months, y:c.stance,    name:'Stance (Pro−Anti)',   type:'scatter', mode:'lines', line:{color:'#dc2626',width:2} },
-    { x:c.months, y:c.sentiment, name:'Sentiment (Pos−Neg)', type:'scatter', mode:'lines', line:{color:'#2563eb',width:2} },
+    { x:c.months, y:c.stance,    name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:2} },
+    { x:c.months, y:c.sentiment, name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:2} },
   ], { ...base, xaxis:{...ax},
        yaxis:{...ax, range:[-1.05,1.05], title:{text:'Score (3M MA)',standoff:4,font:{size:10}},
               zeroline:true, zerolinecolor:'rgba(0,0,0,0.1)', zerolinewidth:1},
