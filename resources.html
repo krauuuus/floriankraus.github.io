@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Resources — Florian Kraus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap">
+<style>
+:root {
+  --bg:#ffffff; --surface:#f8fafc; --accent:#4f46e5; --text:#0f172a;
+  --muted:#64748b; --muted2:#94a3b8; --border:#e2e8f0;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.65;background:var(--bg);color:var(--text);}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);
+     padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:56px;}
+.nav-name{font-family:'EB Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-decoration:none;letter-spacing:.01em;}
+.nav-links{display:flex;gap:28px;list-style:none;margin:0;padding:0;}
+.nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.02em;transition:color .15s;}
+.nav-links a:hover,.nav-links a.active{color:var(--accent);}
+.page{max-width:820px;margin:0 auto;padding:64px 24px 80px;}
+.page-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 12px;}
+.page h1{font-family:'EB Garamond',serif;font-size:clamp(28px,4vw,40px);font-weight:500;margin:0 0 48px;letter-spacing:-0.3px;}
+.block{margin-bottom:56px;}
+.block-title{font-family:'EB Garamond',serif;font-size:24px;font-weight:500;margin:0 0 6px;}
+.block-desc{font-size:13px;color:var(--muted);margin:0 0 24px;}
+/* TD list */
+.td-list{display:flex;flex-direction:column;gap:0;}
+.td-item{display:flex;gap:16px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:baseline;}
+.td-item:first-child{border-top:1px solid var(--border);}
+.td-label{min-width:80px;font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;
+          letter-spacing:.06em;padding-top:1px;flex-shrink:0;}
+.td-link{color:var(--accent);text-decoration:none;transition:opacity .15s;}
+.td-link:hover{opacity:.75;}
+/* DB grid */
+.db-section{margin-bottom:28px;}
+.db-section-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+                  color:var(--muted2);margin:0 0 10px;}
+.db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;}
+.db-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;}
+.db-item a{font-size:13px;font-weight:500;color:var(--text);text-decoration:none;transition:color .15s;}
+.db-item a:hover{color:var(--accent);}
+.footer{border-top:1px solid var(--border);padding:36px 24px;max-width:820px;margin:0 auto;
+        display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.footer-contact{font-size:13px;color:var(--muted);}
+.footer-contact strong{color:var(--text);font-weight:500;display:block;margin-bottom:4px;}
+.footer-contact a{color:var(--accent);text-decoration:none;}
+.footer-addr{font-size:12px;color:var(--muted2);line-height:1.7;}
+@media(max-width:600px){.nav{padding:0 16px;}.nav-links{gap:16px;}.page{padding-inline:16px;}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-name">Florian Kraus</a>
+  <ul class="nav-links">
+    <li><a href="index.html#research">Research</a></li>
+    <li><a href="papers.html">Papers</a></li>
+    <li><a href="cv.html">CV</a></li>
+    <li><a href="index.html#data">Data</a></li>
+    <li><a href="resources.html" class="active">Resources</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <p class="page-eyebrow">Étudiants</p>
+  <h1>Ressources pour étudiants</h1>
+
+  <!-- Econometrics TDs -->
+  <div class="block">
+    <h2 class="block-title">Économétrie des séries temporelles</h2>
+    <p class="block-desc">Matériaux de TD pour M1 Applied Econometrics · Université de Bordeaux — R notebooks publiés sur RPubs / RStudio Pubs.</p>
+    <div class="td-list">
+      <div class="td-item">
+        <span class="td-label">Données</span>
+        <span><a href="https://www.macrohistory.net/database/" class="td-link" target="_blank">Jordà-Schularick-Taylor Macrohistory Database</a></span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 1</span>
+        <span>Statistiques Descriptives &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1352618_13cee94858674a45a629f650d6a0bb8c.html" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 2</span>
+        <span>Stationnarité &amp; Autocorrélation &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1360383_260aba9d47164185a32d035cc508a05f.html" class="td-link" target="_blank">Notebook</a>]
+          &nbsp;· Rappels de cours &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1360385_adef7eb4c870438086cb1f185a0d7bc9.html" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 3</span>
+        <span>Régressions Linéaires &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1360386_c4f57e041892496d901b8705bcbe5dca.html" class="td-link" target="_blank">Notebook</a>]
+          &nbsp;· Méthodes supplémentaires &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1360387_bdec1d103cf045ca84c682f15756b78b.html" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 4</span>
+        <span>Analyse des Résidus &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1360390_93b9ab2aa7e44fdc83bbee35ed5cd8a5.html" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 5</span>
+        <span>Modèles ARIMA &nbsp;[<a href="https://rstudio-pubs-static.s3.amazonaws.com/1360392_c8588de9f8734000a6b5402adea95dec.html" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 6</span>
+        <span>Prévisions avec ARIMA &nbsp;[<a href="https://rpubs.com/Fkraus/1371879" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+      <div class="td-item">
+        <span class="td-label">Séance 7</span>
+        <span>Cointégration &amp; Modèle à Correction d'Erreurs &nbsp;[<a href="https://rpubs.com/Fkraus/1375058" class="td-link" target="_blank">Notebook</a>]</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Resources -->
+  <div class="block">
+    <h2 class="block-title">Data Resources</h2>
+    <p class="block-desc">Bases de données sélectionnées pour la recherche en économie internationale, macro-finance et marchés financiers.</p>
+
+    <div class="db-section">
+      <p class="db-section-label">Commerce International &amp; Tarifs</p>
+      <div class="db-grid">
+        <div class="db-item"><a href="https://ttd.wto.org/en" target="_blank">Tariffs &amp; Trade Data (WTO)</a></div>
+        <div class="db-item"><a href="https://oec.world/en/rankings/eci/hs6/hs96" target="_blank">Trade Product Complexity (OEC)</a></div>
+        <div class="db-item"><a href="https://sites.google.com/view/pskrzypczynski/home/average-effective-tariff-rate-in-the-u-s" target="_blank">Average U.S. Tariffs</a></div>
+      </div>
+    </div>
+
+    <div class="db-section">
+      <p class="db-section-label">Macro-Finance</p>
+      <div class="db-grid">
+        <div class="db-item"><a href="https://www.macrohistory.net/" target="_blank">MacroHistory Database (Jordà et al.)</a></div>
+        <div class="db-item"><a href="https://www.globalmacrodata.com/" target="_blank">Global Macro Database</a></div>
+        <div class="db-item"><a href="https://globalcurrenciesdatabase.com/" target="_blank">Global Currencies Database</a></div>
+        <div class="db-item"><a href="https://www.hbs.edu/behavioral-finance-and-financial-stability/data/Pages/global.aspx" target="_blank">Global Crises Database (Reinhart &amp; Rogoff)</a></div>
+        <div class="db-item"><a href="https://data.bis.org/topics/XRU/data" target="_blank">Daily Exchange Rates (BIS)</a></div>
+        <div class="db-item"><a href="https://marekjarocinski.github.io/jkshocks/jkshocks.html" target="_blank">US/EA Monetary Policy Shocks (Jarocinski)</a></div>
+        <div class="db-item"><a href="https://www.globalsanctionsdatabase.com/" target="_blank">Global Sanctions Database</a></div>
+        <div class="db-item"><a href="https://www.systemicbankruns.com/" target="_blank">Systemic Bank Runs</a></div>
+        <div class="db-item"><a href="https://www.piie.com/publications/policy-briefs/2024/rise-us-economic-sanctions-china-analysis-new-piie-dataset" target="_blank">US Sanctions on China (PIIE)</a></div>
+        <div class="db-item"><a href="https://data.imf.org/en/Datasets" target="_blank">IMF Datasets</a></div>
+      </div>
+    </div>
+
+    <div class="db-section">
+      <p class="db-section-label">Micro-Économie &amp; Finance</p>
+      <div class="db-grid">
+        <div class="db-item"><a href="https://sites.google.com/view/ahlfeldt/toolkits-and-webtools/property-price-indices" target="_blank">Property Price Indices (Germany, England &amp; Wales)</a></div>
+        <div class="db-item"><a href="https://www.onetcenter.org/database.html#overview" target="_blank">Work &amp; Workers Task Characteristics (O*NET)</a></div>
+        <div class="db-item"><a href="https://sites.google.com/view/cryptocurrency-indices/the-indices/crypto-uncertainty" target="_blank">Crypto Policy &amp; Price Uncertainty Index</a></div>
+        <div class="db-item"><a href="https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html" target="_blank">Fama-French Data Library</a></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-contact">
+    <strong>Contact</strong>
+    <a href="mailto:florian.kraus@u-bordeaux.fr">florian.kraus@u-bordeaux.fr</a>
+  </div>
+  <div class="footer-addr">
+    Bordeaux School of Economics (BSE) · UMR CNRS 6060<br>
+    Avenue Léon Duguit, 33608 Pessac, France · Office H2-327
+  </div>
+</footer>
+</body>
+</html>

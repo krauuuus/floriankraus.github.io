@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CV — Florian Kraus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap">
+<style>
+:root {
+  --bg:#ffffff; --surface:#f8fafc; --accent:#4f46e5; --text:#0f172a;
+  --muted:#64748b; --muted2:#94a3b8; --border:#e2e8f0;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.65;background:var(--bg);color:var(--text);}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);
+     padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:56px;}
+.nav-name{font-family:'EB Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-decoration:none;letter-spacing:.01em;}
+.nav-links{display:flex;gap:28px;list-style:none;margin:0;padding:0;}
+.nav-links a{font-size:13px;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.02em;transition:color .15s;}
+.nav-links a:hover,.nav-links a.active{color:var(--accent);}
+.page{max-width:820px;margin:0 auto;padding:64px 24px 80px;}
+.page-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 12px;}
+.page h1{font-family:'EB Garamond',serif;font-size:clamp(28px,4vw,40px);font-weight:500;margin:0 0 48px;letter-spacing:-0.3px;}
+.cv-section{margin-bottom:48px;}
+.cv-section-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+                  color:var(--accent);margin:0 0 20px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.cv-row{display:flex;gap:20px;padding:14px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.cv-row:last-child{border-bottom:none;}
+.cv-date{min-width:90px;font-size:12px;color:var(--muted2);font-variant-numeric:tabular-nums;padding-top:2px;flex-shrink:0;}
+.cv-body{flex:1;}
+.cv-body strong{display:block;font-weight:600;color:var(--text);margin-bottom:3px;}
+.cv-body em{display:block;font-size:13px;color:var(--muted);font-style:normal;margin-bottom:3px;}
+.cv-body small{font-size:12px;color:var(--muted2);}
+.cv-body a{color:var(--text);text-decoration:none;transition:color .15s;}
+.cv-body a:hover{color:var(--accent);}
+.cv-tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.cv-tag{background:var(--surface);border:1px solid var(--border);border-radius:4px;
+        padding:2px 8px;font-size:11px;color:var(--muted);}
+.conf-badge{font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;
+            margin-right:6px;}
+.footer{border-top:1px solid var(--border);padding:36px 24px;max-width:820px;margin:0 auto;
+        display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.footer-contact{font-size:13px;color:var(--muted);}
+.footer-contact strong{color:var(--text);font-weight:500;display:block;margin-bottom:4px;}
+.footer-contact a{color:var(--accent);text-decoration:none;}
+.footer-addr{font-size:12px;color:var(--muted2);line-height:1.7;}
+@media(max-width:600px){.nav{padding:0 16px;}.nav-links{gap:16px;}.page{padding-inline:16px;}.cv-row{flex-direction:column;gap:4px;}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-name">Florian Kraus</a>
+  <ul class="nav-links">
+    <li><a href="index.html#research">Research</a></li>
+    <li><a href="papers.html">Papers</a></li>
+    <li><a href="cv.html" class="active">CV</a></li>
+    <li><a href="index.html#data">Data</a></li>
+    <li><a href="resources.html">Resources</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <p class="page-eyebrow">Academic</p>
+  <h1>Curriculum Vitae</h1>
+
+  <!-- Education -->
+  <div class="cv-section">
+    <p class="cv-section-label">Education</p>
+
+    <div class="cv-row">
+      <div class="cv-date">2022 –</div>
+      <div class="cv-body">
+        <strong>PhD Candidate — International Economics, Finance and Money</strong>
+        <em>Université de Bordeaux · Bordeaux School of Economics (BSE)</em>
+        <small>
+          Thesis: <em>Development of Digital Currencies and Financial Stability in Emerging Markets</em><br>
+          Supervised by
+          <a href="https://www.bse.u-bordeaux.fr/membres/michel-dupuy/" target="_blank">Michel Dupuy</a>
+          &amp;
+          <a href="https://www.bse.u-bordeaux.fr/membres/stephane-dees/" target="_blank">Stéphane Dées</a>
+        </small>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">2021 – 2022</div>
+      <div class="cv-body">
+        <strong>Master's Degree (M2) — International Economics, Banking and Finance</strong>
+        <em>Université de Bordeaux · Bordeaux, France</em>
+        <small>
+          Thesis: <em>Exchange Rate Pass-Through and Central Bank Credibility</em><br>
+          Supervised by <a href="https://www.bse.u-bordeaux.fr/membres/michel-dupuy/" target="_blank">Michel Dupuy</a>
+          · Graduated with honors (1st)
+        </small>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">2020 – 2021</div>
+      <div class="cv-body">
+        <strong>Master's Degree (M1) — International Economics</strong>
+        <em>Université de Bordeaux · Bordeaux, France</em>
+        <small>
+          Thesis: <em>Internationalization of Renminbi: Towards a Currency Bloc in Asia?</em><br>
+          Supervised by <a href="https://www.bse.u-bordeaux.fr/membres/raphael-chiappini/" target="_blank">Raphaël Chiappini</a>
+        </small>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">– 2020</div>
+      <div class="cv-body">
+        <strong>Bachelor's Degree — Economics and Social Administration</strong>
+        <em>Université de Bordeaux · Bordeaux, France</em>
+        <small>Interdisciplinary degree in economics, law, management, and social sciences</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teaching Experience -->
+  <div class="cv-section">
+    <p class="cv-section-label">Teaching Experience</p>
+    <div class="cv-row">
+      <div class="cv-date">2022 –</div>
+      <div class="cv-body">
+        <strong>Teaching Assistant · Université de Bordeaux</strong>
+        <div class="cv-tag-row">
+          <span class="cv-tag">Macroeconomics (L2)</span>
+          <span class="cv-tag">International Finance (L3)</span>
+          <span class="cv-tag">International Trade (L3)</span>
+          <span class="cv-tag">Applied Econometrics: Time Series (M1)</span>
+          <span class="cv-tag">Research Methodology &amp; Thesis Support (M1)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conferences -->
+  <div class="cv-section">
+    <p class="cv-section-label">Conferences &amp; Seminars</p>
+
+    <div class="cv-row">
+      <div class="cv-date">Jun 2026</div>
+      <div class="cv-body">
+        <a href="https://afse2026.sciencesconf.org/data/pages/Programme_AFSE_10.pdf" target="_blank">
+          <strong>74th Annual Conference of the French Association of Economics Science (AFSE)</strong>
+        </a>
+        <em>University of Nantes, France</em>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Jun 2026</div>
+      <div class="cv-body">
+        <a href="https://gdre-2026.sciencesconf.org/program?lang=en" target="_blank">
+          <strong>42nd Symposium on Money, Banking and Finance (GDRE)</strong>
+        </a>
+        <em>University of Rennes, France</em>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Jun 2026</div>
+      <div class="cv-body">
+        <a href="https://easychair.org/smart-program/28thINFERAC23rdFIBA2026/2026-06-04.html#talk:310029" target="_blank">
+          <strong>28th Annual INFER Conference</strong>
+        </a>
+        <em>University of Bucharest, Romania</em>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Jul 2025</div>
+      <div class="cv-body">
+        <a href="https://gdre-nice-2025.sciencesconf.org/data/pages/programme_v_4.pdf" target="_blank">
+          <strong>41st Symposium on Money, Banking and Finance (GDRE)</strong>
+        </a>
+        <em>Université Côte d'Azur, Nice, France</em>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Apr 2024</div>
+      <div class="cv-body">
+        <a href="https://agenda.univ-rennes.fr/events/18eme-doctoriales-macrofi" target="_blank">
+          <strong>18th MacroFi Doctoriales</strong>
+        </a>
+        <em>University of Rennes, France</em>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Mar 2024</div>
+      <div class="cv-body">
+        <strong>BSE PhD Seminars</strong>
+        <em>Bordeaux School of Economics, France</em>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">2024</div>
+      <div class="cv-body">
+        <span class="conf-badge">Organization</span>
+        <a href="https://afse2024.sciencesconf.org/" target="_blank">
+          <strong>72nd Annual Conference of the French Association of Economics Science (AFSE)</strong>
+        </a>
+        <em>Bordeaux School of Economics, France</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skills -->
+  <div class="cv-section">
+    <p class="cv-section-label">Skills</p>
+
+    <div class="cv-row">
+      <div class="cv-date">Languages</div>
+      <div class="cv-body">
+        <small>French (native) · English (advanced) · German (intermediate)</small>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Software</div>
+      <div class="cv-body">
+        <div class="cv-tag-row">
+          <span class="cv-tag">R</span><span class="cv-tag">Python</span>
+          <span class="cv-tag">Stata</span><span class="cv-tag">Matlab</span>
+          <span class="cv-tag">LaTeX</span><span class="cv-tag">Excel</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cv-row">
+      <div class="cv-date">Data &amp; AI</div>
+      <div class="cv-body">
+        <div class="cv-tag-row">
+          <span class="cv-tag">REST APIs</span><span class="cv-tag">NLP</span>
+          <span class="cv-tag">BERT</span><span class="cv-tag">Jev (LLM classifier)</span>
+          <span class="cv-tag">Hugging Face</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-contact">
+    <strong>Contact</strong>
+    <a href="mailto:florian.kraus@u-bordeaux.fr">florian.kraus@u-bordeaux.fr</a>
+  </div>
+  <div class="footer-addr">
+    Bordeaux School of Economics (BSE) · UMR CNRS 6060<br>
+    Avenue Léon Duguit, 33608 Pessac, France · Office H2-327
+  </div>
+</footer>
+</body>
+</html>
