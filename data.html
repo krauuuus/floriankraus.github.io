@@ -43,7 +43,6 @@ body { margin:0; font-family:'Inter',system-ui,sans-serif; font-size:15px;
 }
 .tab-btn:hover { color:var(--text); }
 .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
-.tab-btn .tab-icon { font-size:15px; }
 
 /* ── Pages ── */
 .page { display:none; max-width:1060px; margin:0 auto; padding:36px 24px 80px; }
@@ -138,18 +137,10 @@ select.dash-dd:focus { outline:none; border-color:var(--accent); }
 
 <!-- ── Tab bar ── -->
 <div class="tab-bar">
-  <button class="tab-btn active" id="tab-buckets" onclick="showTab('buckets')">
-    <span class="tab-icon">📊</span> Transaction Flows
-  </button>
-  <button class="tab-btn" id="tab-factor" onclick="showTab('factor')">
-    <span class="tab-icon">📈</span> Systematic Factor
-  </button>
-  <button class="tab-btn" id="tab-fifff" onclick="showTab('fifff')">
-    <span class="tab-icon">⚠️</span> Financial Instability
-  </button>
-  <button class="tab-btn" id="tab-cbdc" onclick="showTab('cbdc')">
-    <span class="tab-icon">🏦</span> CBDC Sentiment
-  </button>
+  <button class="tab-btn active" id="tab-buckets" onclick="showTab('buckets')">Transaction Flows</button>
+  <button class="tab-btn" id="tab-factor"  onclick="showTab('factor')">Systematic Factor</button>
+  <button class="tab-btn" id="tab-fifff"   onclick="showTab('fifff')">Financial Instability</button>
+  <button class="tab-btn" id="tab-cbdc"    onclick="showTab('cbdc')">CBDC Sentiment</button>
 </div>
 
 <!-- ── TRANSACTION FLOWS ── -->
@@ -290,15 +281,6 @@ function renderTab(id) {
   if (id === 'fifff')   renderFifff();
   if (id === 'cbdc')    renderCbdc();
 }
-
-// Hash-based deep linking: data.html#cbdc, #fifff, etc.
-(function() {
-  const valid = ['buckets','factor','fifff','cbdc'];
-  const h = location.hash.replace('#','');
-  if (valid.includes(h)) showTab(h);
-  else renderTab('buckets'); // render first tab immediately
-  _rendered['buckets'] = true;
-})();
 
 // ── Plotly config ────────────────────────────────────────────────────────────
 const GRID = 'rgba(0,0,0,0.06)';
@@ -490,6 +472,15 @@ function downloadCSV(section) {
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
+}
+
+// Init: hash-based deep linking or default to first tab
+const _h = location.hash.replace('#','');
+if (['buckets','factor','fifff','cbdc'].includes(_h)) {
+  showTab(_h);
+} else {
+  _rendered['buckets'] = true;
+  renderBuckets();
 }
 </script>
 </body>
