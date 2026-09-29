@@ -233,24 +233,46 @@ select.dash-dd:focus { outline:none; border-color:var(--accent); }
       <h1 class="section-title">Central Bank CBDC Sentiment</h1>
       <p class="section-desc">
         Monthly CBDC stance and sentiment indices from 635 BIS central bank speeches (2018–2026),
-        classified by the Jev LLM model. Score = Pro% − Anti%, 3-month MA.
+        classified by two complementary models: CBDC-BERT (Zafar et al., 2024) and Jev (LLM classifier).
+        Score = Pro% − Anti%, 3-month MA.
         Source: <a href="papers.html">Kraus &amp; Lamagnère (2025)</a>
       </p>
     </div>
     <button class="dl-btn" onclick="downloadCSV('cbdc')">⬇ CSV</button>
   </div>
   <div class="stats-row" id="cbdc-stats"></div>
+
   <div class="chart-card" style="border-left-color:#dc2626;">
     <p class="chart-card-title">Stance &amp; Sentiment — Jev model (3M MA)</p>
-    <div id="chart-cbdc" style="height:340px;"></div>
+    <div id="chart-cbdc-jev" style="height:320px;"></div>
+    <p class="chart-note">Jev (LLM classifier via JEV API). Score = Pro% − Anti%; 3-month moving average.</p>
   </div>
-  <div class="chart-card" style="border-left-color:#4f46e5;">
-    <p class="chart-card-title">Speech Type — Retail / Wholesale / General (% of sentences)</p>
-    <div id="chart-cbdc-type" style="height:280px;"></div>
+
+  <div class="chart-card" style="border-left-color:#2563eb;">
+    <p class="chart-card-title">Stance &amp; Sentiment — CBDC-BERT (3M MA)</p>
+    <div id="chart-cbdc-bert" style="height:320px;"></div>
+    <p class="chart-note">CBDC-BERT (Zafar et al., 2024) — fine-tuned BERT classifiers applied to CBDC-related sentences from BIS speeches.
+      Models: <a href="https://huggingface.co/bilalzafar/cbdc-bert-stance" target="_blank">cbdc-bert-stance</a>,
+      <a href="https://huggingface.co/bilalzafar/cbdc-bert-sentiment" target="_blank">cbdc-bert-sentiment</a>.</p>
   </div>
+
   <div class="chart-card" style="border-left-color:#7c3aed;">
-    <p class="chart-card-title">Discourse — Features / Process / Risk-Benefit (% of sentences)</p>
-    <div id="chart-cbdc-disc" style="height:280px;"></div>
+    <p class="chart-card-title">Stance &amp; Sentiment by Discourse — BERT (3M MA)</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div>
+        <p style="font-size:11px;font-weight:600;color:var(--muted2);text-align:center;margin:0 0 4px;">Feature</p>
+        <div id="chart-disc-feat" style="height:240px;"></div>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:600;color:var(--muted2);text-align:center;margin:0 0 4px;">Process</p>
+        <div id="chart-disc-proc" style="height:240px;"></div>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:600;color:var(--muted2);text-align:center;margin:0 0 4px;">Risk-Benefit</p>
+        <div id="chart-disc-risk" style="height:240px;"></div>
+      </div>
+    </div>
+    <p class="chart-note">Average sentence-level Stance and Sentiment per discourse category (BERT). 3-month MA.</p>
   </div>
 </div>
 
@@ -396,43 +418,49 @@ function renderCbdc() {
   const ls = c.last_stance;
   const slabel = ls > 0.1 ? 'Pro' : (ls < -0.1 ? 'Anti' : 'Neutral');
   const scolor = ls > 0.1 ? '#16a34a' : (ls < -0.1 ? '#dc2626' : '#d97706');
+  const lbs = c.last_bert_stance;
+  const bslabel = lbs > 0.1 ? 'Pro' : (lbs < -0.1 ? 'Anti' : 'Neutral');
+  const bscolor = lbs > 0.1 ? '#16a34a' : (lbs < -0.1 ? '#dc2626' : '#d97706');
 
   document.getElementById('cbdc-stats').innerHTML =
-    statCard('Speeches analysed',   c.total_speeches.toLocaleString(), '') +
-    statCard('Recent stance (Jev)', slabel+' ('+(ls>=0?'+':'')+ls.toFixed(2)+')', scolor) +
-    statCard('Latest period',       c.last_month, '#94a3b8');
+    statCard('Speeches analysed',    c.total_speeches.toLocaleString(), '') +
+    statCard('Recent stance (Jev)',  slabel+' ('+(ls>=0?'+':'')+ls.toFixed(2)+')', scolor) +
+    statCard('Recent stance (BERT)', bslabel+' ('+(lbs>=0?'+':'')+lbs.toFixed(2)+')', bscolor) +
+    statCard('Latest period',        c.last_month, '#94a3b8');
 
-  Plotly.react('chart-cbdc', [
+  const zeroShape = {type:'line', x0:c.months[0], x1:c.months[c.months.length-1],
+                     y0:0, y1:0, line:{dash:'dot',color:'#94a3b8',width:1}};
+  const scoreAxis = {...AX, range:[-1.05,1.05], title:{text:'Score (3M MA)',standoff:8},
+                     zeroline:false};
+
+  // Chart 1: Jev model
+  Plotly.react('chart-cbdc-jev', [
     {x:c.months, y:c.stance,    name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:2}},
     {x:c.months, y:c.sentiment, name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:2}},
-  ], {
-    ...BASE, xaxis:{...AX},
-    yaxis:{...AX, range:[-1.05,1.05], title:{text:'Score (3M MA)',standoff:8},
-           zeroline:true, zerolinecolor:GRID, zerolinewidth:1},
-    legend:LEG, hovermode:'x unified',
-    shapes:[{type:'line', x0:c.months[0], x1:c.months[c.months.length-1],
-             y0:0, y1:0, line:{dash:'dot',color:'#94a3b8',width:1}}],
-  }, CFG);
+  ], {...BASE, xaxis:{...AX}, yaxis:scoreAxis, legend:LEG, hovermode:'x unified', shapes:[zeroShape]}, CFG);
 
-  Plotly.react('chart-cbdc-type', [
-    {x:c.months, y:c.type_retail.map(v=>+(v*100).toFixed(1)),    name:'Retail',    type:'scatter', mode:'lines', line:{color:'#4f46e5',width:2}},
-    {x:c.months, y:c.type_wholesale.map(v=>+(v*100).toFixed(1)), name:'Wholesale', type:'scatter', mode:'lines', line:{color:'#d97706',width:2}},
-    {x:c.months, y:c.type_general.map(v=>+(v*100).toFixed(1)),   name:'General',   type:'scatter', mode:'lines', line:{color:'#16a34a',width:2}},
-  ], {
-    ...BASE, xaxis:{...AX},
-    yaxis:{...AX, ticksuffix:'%', range:[0,102], title:{text:'% sentences',standoff:8}},
-    legend:LEG, hovermode:'x unified',
-  }, CFG);
+  // Chart 2: BERT model
+  Plotly.react('chart-cbdc-bert', [
+    {x:c.months, y:c.bert_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:2}},
+    {x:c.months, y:c.bert_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:2}},
+  ], {...BASE, xaxis:{...AX}, yaxis:scoreAxis, legend:LEG, hovermode:'x unified', shapes:[zeroShape]}, CFG);
 
-  Plotly.react('chart-cbdc-disc', [
-    {x:c.months, y:c.disc_feat.map(v=>+(v*100).toFixed(1)), name:'Features',     type:'scatter', mode:'lines', line:{color:'#7c3aed',width:2}},
-    {x:c.months, y:c.disc_proc.map(v=>+(v*100).toFixed(1)), name:'Process',      type:'scatter', mode:'lines', line:{color:'#0891b2',width:2}},
-    {x:c.months, y:c.disc_risk.map(v=>+(v*100).toFixed(1)), name:'Risk-Benefit', type:'scatter', mode:'lines', line:{color:'#dc2626',width:2}},
-  ], {
-    ...BASE, xaxis:{...AX},
-    yaxis:{...AX, ticksuffix:'%', range:[0,102], title:{text:'% sentences',standoff:8}},
-    legend:LEG, hovermode:'x unified',
-  }, CFG);
+  // Chart 3: Discourse breakdown (BERT) — 3 separate facet panels
+  const discBase = {...BASE, margin:{t:8,r:10,b:40,l:44},
+                    xaxis:{...AX}, yaxis:{...AX, range:[-1.05,1.05], zeroline:false},
+                    hovermode:'x unified', showlegend:false, shapes:[zeroShape]};
+  Plotly.react('chart-disc-feat', [
+    {x:c.months, y:c.disc_feat_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:1.5}},
+    {x:c.months, y:c.disc_feat_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:1.5}},
+  ], discBase, CFG);
+  Plotly.react('chart-disc-proc', [
+    {x:c.months, y:c.disc_proc_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:1.5}},
+    {x:c.months, y:c.disc_proc_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:1.5}},
+  ], discBase, CFG);
+  Plotly.react('chart-disc-risk', [
+    {x:c.months, y:c.disc_risk_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:1.5}},
+    {x:c.months, y:c.disc_risk_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:1.5}},
+  ], discBase, CFG);
 }
 
 // ── CSV download ─────────────────────────────────────────────────────────────
@@ -460,10 +488,10 @@ function downloadCSV(section) {
     });
     filename = 'fi_ff_share.csv';
   } else if (section === 'cbdc') {
-    csv = 'month,jev_stance,jev_sentiment,pro_pct,anti_pct,wait_pct,n_speeches\n';
+    csv = 'month,jev_stance,jev_sentiment,bert_stance,bert_sentiment,n_speeches\n';
     const c = CHART_DATA.cbdc;
     c.months.forEach((m,i) => {
-      csv += [m,c.stance[i],c.sentiment[i],c.pro_pct[i],c.anti_pct[i],c.wait_pct[i],c.n_speeches[i]].join(',') + '\n';
+      csv += [m,c.stance[i],c.sentiment[i],c.bert_stance[i],c.bert_sent[i],c.n_speeches[i]].join(',') + '\n';
     });
     filename = 'cbdc_sentiment_monthly.csv';
   }
