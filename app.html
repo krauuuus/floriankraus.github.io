@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Research Dashboard — Florian Kraus</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+<script src="data.js"></script>
+<style>
+:root {
+  --bg:      #f5f6f8; --surface: #ffffff; --border: #e2e8f0;
+  --text:    #1e293b; --muted:   #64748b; --muted2: #94a3b8;
+  --accent:  #4f46e5; --accent2: #7c3aed;
+  --green:   #16a34a; --red: #dc2626; --yellow: #d97706; --cyan: #0891b2;
+  --nav-h:   52px;
+  color-scheme: light;
+}
+*,*::before,*::after { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+       font-family: Inter,-apple-system,sans-serif; font-size:14px; line-height:1.6; }
+
+/* ── Top nav ──────────────────────────────────────────────────────────────── */
+.topnav {
+  position: sticky; top: 0; z-index: 200;
+  height: var(--nav-h); background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0;
+  padding: 0 32px;
+}
+.topnav-brand {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  text-decoration: none; margin-right: 32px; white-space: nowrap;
+}
+.topnav-brand span { color: var(--accent); }
+.nav-tabs { display: flex; gap: 0; height: 100%; }
+.nav-tab {
+  display: flex; align-items: center; padding: 0 18px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s; white-space: nowrap;
+  user-select: none;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.topnav-right { margin-left: auto; font-size: 12px; color: var(--muted2); }
+.topnav-right a { color: var(--accent); text-decoration: none; }
+
+/* ── Pages ────────────────────────────────────────────────────────────────── */
+.page { display: none; padding: 32px; min-height: calc(100vh - var(--nav-h)); }
+.page.active { display: block; }
+
+/* ── Cards stat ───────────────────────────────────────────────────────────── */
+.stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 18px; min-width: 100px;
+}
+.stat-label { font-size: 11px; color: var(--muted2); font-weight: 600;
+              text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 700; }
+
+/* ── Section header ───────────────────────────────────────────────────────── */
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.section-header h2 { margin:0; font-size:18px; font-weight:700; flex:1; }
+.section-header .icon { font-size: 20px; }
+
+/* ── Controls row ─────────────────────────────────────────────────────────── */
+.controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.ctrl-label { font-size: 12px; font-weight: 600; color: var(--muted2);
+              display: flex; align-items: center; gap: 6px; }
+select.dash-dd {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 28px 6px 10px; font-size: 13px;
+  color: var(--text); cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  min-width: 130px; transition: border-color .15s;
+}
+select.dash-dd:focus { outline: none; border-color: var(--accent); }
+
+/* ── Chart card ───────────────────────────────────────────────────────────── */
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 16px 8px;
+  margin-bottom: 20px;
+}
+.chart-card-title {
+  font-size: 13px; font-weight: 600; color: var(--muted2);
+  margin: 0 0 8px; letter-spacing: .01em;
+}
+.chart-note { font-size: 11px; color: var(--muted2); font-style: italic;
+              margin: 4px 0 0; line-height: 1.5; }
+
+/* ── Info box ─────────────────────────────────────────────────────────────── */
+.info-box {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 18px;
+  font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 20px;
+}
+.info-box a { color: var(--accent); text-decoration: none; }
+
+/* ── Home page ────────────────────────────────────────────────────────────── */
+.home-wrapper { background: #f8fafc; margin: -32px; }
+.home-hero { padding: 64px 52px 48px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+.home-hero-title { margin:0 0 12px; font-size:44px; font-weight:800; color:#0f172a;
+                   letter-spacing:-1.5px; line-height:1.05; }
+.home-hero-accent { background: linear-gradient(90deg,#6366f1,#8b5cf6);
+                    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                    background-clip:text; }
+.home-hero-sub { font-size:15px; color:#64748b; margin:0; }
+.home-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; padding:36px 52px 64px; }
+.home-card {
+  background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+  padding:28px 28px 22px; cursor:pointer; display:flex; flex-direction:column;
+  transition: box-shadow .2s, transform .2s, border-color .2s;
+  animation: cardIn .4s ease both;
+}
+@keyframes cardIn { from { opacity:0; } to { opacity:1; } }
+.home-card:nth-child(2){animation-delay:80ms}
+.home-card:nth-child(3){animation-delay:160ms}
+.home-card:nth-child(4){animation-delay:240ms}
+.home-card:hover { box-shadow:0 8px 32px -8px rgba(0,0,0,.12); transform:translateY(-3px); }
+.home-card-buckets:hover { border-color:#4f46e5; box-shadow:0 8px 32px -8px rgba(0,0,0,.12),0 0 0 1px #4f46e5; }
+.home-card-factor:hover  { border-color:#d97706; box-shadow:0 8px 32px -8px rgba(0,0,0,.12),0 0 0 1px #d97706; }
+.home-card-fifff:hover   { border-color:#dc2626; box-shadow:0 8px 32px -8px rgba(0,0,0,.12),0 0 0 1px #dc2626; }
+.home-card-cbdc:hover    { border-color:#16a34a; box-shadow:0 8px 32px -8px rgba(0,0,0,.12),0 0 0 1px #16a34a; }
+.home-card-icon { font-size:26px; margin-bottom:16px; }
+.home-card-title { margin:0 0 10px; font-size:16px; font-weight:700; color:#0f172a; line-height:1.35; }
+.home-card-desc { margin:0 0 auto; font-size:13px; color:#64748b; line-height:1.65; flex-grow:1; }
+.home-card-arrow { margin-top:20px; font-size:12px; font-weight:600;
+                   letter-spacing:.04em; transition:transform .18s; display:inline-block; }
+.home-card-buckets .home-card-arrow { color:#4f46e5; }
+.home-card-factor  .home-card-arrow { color:#d97706; }
+.home-card-fifff   .home-card-arrow { color:#dc2626; }
+.home-card-cbdc    .home-card-arrow { color:#16a34a; }
+.home-card:hover .home-card-arrow { transform:translateX(6px); }
+.home-card-buckets { border-left:3px solid #4f46e5; }
+.home-card-factor  { border-left:3px solid #d97706; }
+.home-card-fifff   { border-left:3px solid #dc2626; }
+.home-card-cbdc    { border-left:3px solid #16a34a; }
+
+@media(max-width:640px) {
+  .home-grid { grid-template-columns:1fr; padding:20px 16px; }
+  .home-hero { padding:40px 20px 32px; }
+  .home-hero-title { font-size:28px; }
+  .page { padding:16px; }
+  .topnav { padding:0 12px; }
+  .nav-tab { padding:0 10px; font-size:11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Top nav -->
+<nav class="topnav">
+  <a href="#" class="topnav-brand" onclick="showPage('home');return false;">
+    <span>Crypto</span> Research
+  </a>
+  <div class="nav-tabs">
+    <div class="nav-tab active" id="tab-home"    onclick="showPage('home')">Home</div>
+    <div class="nav-tab"        id="tab-buckets" onclick="showPage('buckets')">Transaction Flows</div>
+    <div class="nav-tab"        id="tab-factor"  onclick="showPage('factor')">Systematic Factor</div>
+    <div class="nav-tab"        id="tab-fifff"   onclick="showPage('fifff')">FI / FF</div>
+    <div class="nav-tab"        id="tab-cbdc"    onclick="showPage('cbdc')">CBDC Sentiment</div>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html">← Academic site</a>
+  </div>
+</nav>
+
+<!-- ── HOME ──────────────────────────────────────────────────────────────── -->
+<div class="page active" id="page-home">
+  <div class="home-wrapper">
+    <div class="home-hero">
+      <h1 class="home-hero-title">
+        <span class="home-hero-accent">Crypto</span> Research
+      </h1>
+      <p class="home-hero-sub">Interactive data dashboards — Florian Kraus, Université de Bordeaux</p>
+    </div>
+    <div class="home-grid">
+      <div class="home-card home-card-buckets" onclick="showPage('buckets')">
+        <div class="home-card-icon"></div>
+        <h3 class="home-card-title">Transaction Flows</h3>
+        <p class="home-card-desc">Trade-size composition from Binance aggTrades — retail vs. institutional breakdown across 4 major crypto assets</p>
+        <div class="home-card-arrow">Open →</div>
+      </div>
+      <div class="home-card home-card-factor" onclick="showPage('factor')">
+        <div class="home-card-icon"></div>
+        <h3 class="home-card-title">Crypto-market systematic factor</h3>
+        <p class="home-card-desc">Common market factor extracted by DFM from 7 reference cryptos, with CRIX as a benchmark index</p>
+        <div class="home-card-arrow">Open →</div>
+      </div>
+      <div class="home-card home-card-fifff" onclick="showPage('fifff')">
+        <div class="home-card-icon"></div>
+        <h3 class="home-card-title">Financial Instability &amp; Fragility</h3>
+        <p class="home-card-desc">FI/FF asset classification, time-series share, and portfolio performance under different stability regimes</p>
+        <div class="home-card-arrow">Open →</div>
+      </div>
+      <div class="home-card home-card-cbdc" onclick="showPage('cbdc')">
+        <div class="home-card-icon"></div>
+        <h3 class="home-card-title">Central Bank CBDC Sentiment</h3>
+        <p class="home-card-desc">Monthly CBDC sentiment indices from BIS central bank speeches — Jev model classification</p>
+        <div class="home-card-arrow">Open →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TRANSACTION FLOWS ─────────────────────────────────────────────────── -->
+<div class="page" id="page-buckets">
+  <div class="section-header">
+    <span class="icon"></span>
+    <h2>Transaction Flows</h2>
+    <button class="dl-btn" onclick="downloadCSV('buckets')">⬇ CSV</button>
+  </div>
+  <div class="info-box">
+    We classify every trade on Binance by USD notional size and aggregate monthly.
+    Default grouping: retail (&lt;$10k), mid ($10k–$100k), institutional (&gt;$100k).
+    Source: <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5230639" target="_blank">Kraus (2026)</a>
+  </div>
+  <div class="controls">
+    <label class="ctrl-label">Asset
+      <select class="dash-dd" id="bucket-asset" onchange="renderBuckets()">
+        <option value="BTC">BTC</option>
+        <option value="ETH">ETH</option>
+        <option value="XRP">XRP</option>
+        <option value="LTC">LTC</option>
+      </select>
+    </label>
+  </div>
+  <div class="stats-row" id="bucket-stats"></div>
+  <div class="chart-card">
+    <div id="chart-buckets" style="height:380px"></div>
+    <p class="chart-note">Monthly Binance aggTrade volume share by size group. Stacked area = 100% of total volume.</p>
+  </div>
+</div>
+
+<!-- ── SYSTEMATIC FACTOR ─────────────────────────────────────────────────── -->
+<div class="page" id="page-factor">
+  <div class="section-header">
+    <span class="icon"></span>
+    <h2>Crypto-market systematic factor</h2>
+    <button class="dl-btn" onclick="downloadCSV('factor')">⬇ CSV</button>
+  </div>
+  <div class="info-box">
+    Common market factor extracted by Dynamic Factor Model (DFM) from 7 reference cryptocurrencies.
+    PC1 captures the dominant systematic component of daily crypto returns.
+    CRIX benchmark: <a href="https://thecrix.de" target="_blank">Humboldt-Universität (thecrix.de)</a>
+    — CRIX data is not redistributable.
+  </div>
+  <div class="chart-card">
+    <div class="chart-card-title">Common Market Factor — Cumulative PC1</div>
+    <div id="chart-factor" style="height:320px"></div>
+  </div>
+  <div class="chart-card" id="crix-card">
+    <div class="chart-card-title">CRIX — Crypto Market Index (log scale)</div>
+    <div id="chart-crix" style="height:300px"></div>
+    <p class="chart-note">Source: CRIX — Humboldt-Universität zu Berlin (thecrix.de). Not redistributable.</p>
+  </div>
+</div>
+
+<!-- ── FI / FF ────────────────────────────────────────────────────────────── -->
+<div class="page" id="page-fifff">
+  <div class="section-header">
+    <span class="icon"></span>
+    <h2>Financial Instability &amp; Fragility</h2>
+    <button class="dl-btn" onclick="downloadCSV('fifff')">⬇ CSV</button>
+  </div>
+  <div class="info-box">
+    Assets are classified monthly using an 18-month rolling quantile regression on 7 fundamentals.
+    FI = Financially Instable; FF = Financially Fragile.
+    Source: <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6511742" target="_blank">Kraus (2025) — SSRN</a>
+    · <a href="https://rpubs.com/Fkraus/1417001" target="_blank">R Notebook</a>
+  </div>
+  <div class="stats-row" id="fifff-stats"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">Financial Stability &amp; Fragility — asset share by rolling window (18M)</div>
+    <div id="chart-fifff" style="height:380px"></div>
+  </div>
+  <div class="chart-card" id="portfolio-card">
+    <div class="chart-card-title">Portfolio Performance — Cumulative wealth (log scale, base 100)</div>
+    <div id="chart-portfolio" style="height:380px"></div>
+    <p class="chart-note">Equally-weighted portfolios, 1-month forward lag (out-of-sample) · Che et al. (2023)</p>
+  </div>
+</div>
+
+<!-- ── CBDC ───────────────────────────────────────────────────────────────── -->
+<div class="page" id="page-cbdc">
+  <div class="section-header">
+    <span class="icon"></span>
+    <h2>Central Bank CBDC Sentiment</h2>
+    <button class="dl-btn" onclick="downloadCSV('cbdc')">⬇ CSV</button>
+  </div>
+  <div class="info-box">
+    Monthly CBDC sentiment indices from BIS central bank speech corpus (post-2018).
+    Jev model: LLM classifier (TypeSafe via JEV API). Score = (Pro% − Anti%), 3-month MA.
+    Source: <a href="#" target="_blank">Kraus &amp; Lamagnère (2025)</a>
+  </div>
+  <div class="stats-row" id="cbdc-stats"></div>
+  <div class="chart-card">
+    <div class="chart-card-title">CBDC Stance &amp; Sentiment — Jev model (3M MA)</div>
+    <div id="chart-cbdc" style="height:340px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-card-title">CBDC Speech Type — Retail / Wholesale / General (% of sentences)</div>
+    <div id="chart-cbdc-type" style="height:260px"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-card-title">CBDC Discourse — Features / Process / Risk-Benefit (% of sentences)</div>
+    <div id="chart-cbdc-disc" style="height:260px"></div>
+  </div>
+</div>
+
+<!-- Download button style (shared) -->
+<style>
+.dl-btn {
+  background:transparent; border:1px solid #cbd5e1; border-radius:6px;
+  padding:6px 14px; font-size:12px; font-weight:600; color:#475569;
+  cursor:pointer; transition:border-color .15s,color .15s,background .15s;
+  margin-left:auto;
+}
+.dl-btn:hover { border-color:var(--accent); color:var(--accent); background:#eef2ff; }
+</style>
+
+<script>
+// ── Page routing ─────────────────────────────────────────────────────────────
+let _rendered = {};
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (!_rendered[id]) { renderPage(id); _rendered[id] = true; }
+}
+function renderPage(id) {
+  if (id === 'buckets') renderBuckets();
+  if (id === 'factor')  renderFactor();
+  if (id === 'fifff')   renderFifff();
+  if (id === 'cbdc')    renderCbdc();
+}
+
+// ── Plotly helpers ───────────────────────────────────────────────────────────
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const GRID  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+const TICK  = isDark ? '#94a3b8' : '#64748b';
+const BG    = 'rgba(0,0,0,0)';
+const BASE  = { paper_bgcolor: BG, plot_bgcolor: BG,
+                margin: { t: 24, r: 16, b: 44, l: 52 },
+                font: { family: 'Inter,sans-serif', size: 12, color: TICK } };
+const AX    = { tickfont: { size: 11, color: TICK }, gridcolor: GRID,
+                zeroline: false, linecolor: GRID };
+const LEG   = { orientation: 'h', y: -0.22, x: 0, bgcolor: BG,
+                font: { size: 11, color: TICK } };
+const CFG   = { responsive: true, displayModeBar: false };
+
+function statCard(label, value, color) {
+  return `<div class="stat-card"><div class="stat-label">${label}</div>
+          <div class="stat-value" style="color:${color||'var(--text)'}">${value}</div></div>`;
+}
+
+// ── Transaction Flows ────────────────────────────────────────────────────────
+function renderBuckets() {
+  const asset = document.getElementById('bucket-asset').value;
+  const d = CHART_DATA.buckets[asset];
+  if (!d) return;
+
+  document.getElementById('bucket-stats').innerHTML =
+    statCard('< $10K',  d.small_pct + '%',  '#818cf8') +
+    statCard('> $100K', d.large_pct + '%',  '#d97706') +
+    statCard('> $1M',   d.whale_pct + '%',  '#dc2626') +
+    statCard('Latest',  d.last_ym,          '#94a3b8') +
+    statCard('Source',  'Binance · ' + d.n_months + ' mo', '#94a3b8');
+
+  const colors = { '< $10k': '#818cf8', '$10k – $100k': '#6366f1', '> $100k': '#3730a3' };
+  const groups = Object.keys(colors);
+  const traces = groups.map(g => ({
+    x: d.months, y: d[g] ? d[g].map(v => +(v * 100).toFixed(2)) : [],
+    name: g, type: 'scatter', mode: 'lines',
+    stackgroup: 'one', fillcolor: colors[g],
+    line: { color: colors[g], width: 0.5 },
+  }));
+
+  Plotly.react('chart-buckets', traces, {
+    ...BASE,
+    barmode: 'stack',
+    yaxis: { ...AX, title: { text: 'Share (%)', standoff: 8 }, range: [0, 100] },
+    xaxis: { ...AX, type: 'category',
+             tickmode: 'auto', nticks: 12, tickangle: -30 },
+    legend: LEG,
+    title: { text: asset + ' — Trade-size composition (Binance)',
+             font: { size: 13, color: TICK }, x: 0, xref: 'paper' },
+  }, CFG);
+}
+
+// ── Systematic Factor ────────────────────────────────────────────────────────
+function renderFactor() {
+  const f = CHART_DATA.factor;
+  Plotly.react('chart-factor', [{
+    x: f.dates, y: f.pc1_cum,
+    type: 'scatter', mode: 'lines',
+    line: { color: '#4f46e5', width: 1.5 },
+    fill: 'tozeroy', fillcolor: 'rgba(79,70,229,0.1)',
+    showlegend: false,
+  }], {
+    ...BASE,
+    xaxis: { ...AX },
+    yaxis: { ...AX, title: { text: 'Cumulative PC1', standoff: 8 } },
+  }, CFG);
+
+  const c = CHART_DATA.crix;
+  if (c && c.dates && c.dates.length) {
+    Plotly.react('chart-crix', [{
+      x: c.dates, y: c.log_price,
+      type: 'scatter', mode: 'lines',
+      line: { color: '#7c3aed', width: 1.5 },
+      showlegend: false,
+    }], {
+      ...BASE,
+      xaxis: { ...AX },
+      yaxis: { ...AX, title: { text: 'log(CRIX)', standoff: 8 } },
+    }, CFG);
+  } else {
+    document.getElementById('crix-card').style.display = 'none';
+  }
+}
+
+// ── FI / FF ──────────────────────────────────────────────────────────────────
+function renderFifff() {
+  const d = CHART_DATA.fifff;
+  const n = d.n_total, fi = Math.round(d.last_fi * n), ff = Math.round(d.last_ff * n);
+
+  document.getElementById('fifff-stats').innerHTML =
+    statCard('FI assets (latest)', fi + '/' + n,  '#dc2626') +
+    statCard('FF assets (latest)', ff + '/' + n,  '#3b82f6') +
+    statCard('Assets covered',     n,              '#94a3b8') +
+    statCard('Latest window',      d.last_win,     '#94a3b8');
+
+  Plotly.react('chart-fifff', [
+    { x: d.months, y: d.fi.map(v=>+(v*100).toFixed(1)), name: 'Financial Instability (FI)',
+      type:'scatter', mode:'lines+markers',
+      line:{color:'#dc2626',width:2}, marker:{size:4} },
+    { x: d.months, y: d.ff.map(v=>+(v*100).toFixed(1)), name: 'Financial Fragility (FF)',
+      type:'scatter', mode:'lines+markers',
+      line:{color:'#3b82f6',width:2}, marker:{size:4} },
+  ], {
+    ...BASE,
+    xaxis: { ...AX },
+    yaxis: { ...AX, title: { text: 'Share of assets (%)', standoff: 8 }, range: [0, 100] },
+    legend: LEG,
+    hovermode: 'x unified',
+  }, CFG);
+
+  const p = CHART_DATA.portfolio;
+  if (p && p.dates && p.dates.length) {
+    const pcols = { FI:'#dc2626', FF:'#3b82f6', Stable:'#16a34a', Top10:'#475569' };
+    const pnames = { FI:'Financial Instability', FF:'Financial Fragility',
+                     Stable:'Financial Stability', Top10:'Top-10' };
+    Plotly.react('chart-portfolio',
+      ['FI','FF','Stable','Top10'].map(k => ({
+        x: p.dates, y: p[k], name: pnames[k],
+        type:'scatter', mode:'lines', line:{color:pcols[k],width:2},
+      })),
+      { ...BASE,
+        xaxis: { ...AX },
+        yaxis: { ...AX, type:'log', title:{text:'Cumulative wealth',standoff:8} },
+        legend: LEG, hovermode:'x unified',
+      }, CFG);
+  } else {
+    document.getElementById('portfolio-card').style.display = 'none';
+  }
+}
+
+// ── CBDC ─────────────────────────────────────────────────────────────────────
+function renderCbdc() {
+  const c = CHART_DATA.cbdc;
+  const last_s = c.last_stance;
+  const stance_label = last_s > 0.1 ? 'Pro' : (last_s < -0.1 ? 'Anti' : 'Neutral');
+  const stance_color = last_s > 0.1 ? '#16a34a' : (last_s < -0.1 ? '#dc2626' : '#d97706');
+
+  document.getElementById('cbdc-stats').innerHTML =
+    statCard('Speeches analysed',    c.total_speeches.toLocaleString(), '') +
+    statCard('Recent stance (Jev)',  stance_label + ' (' + (last_s >= 0 ? '+' : '') + last_s.toFixed(2) + ')', stance_color) +
+    statCard('Latest period',        c.last_month, '#94a3b8');
+
+  Plotly.react('chart-cbdc', [
+    { x: c.months, y: c.stance,    name: 'Stance (Pro−Anti)',   type:'scatter', mode:'lines',
+      line:{color:'#dc2626',width:2} },
+    { x: c.months, y: c.sentiment, name: 'Sentiment (Pos−Neg)', type:'scatter', mode:'lines',
+      line:{color:'#2563eb',width:2} },
+  ], {
+    ...BASE,
+    xaxis: { ...AX },
+    yaxis: { ...AX, range:[-1.05,1.05], title:{text:'Score (3M MA)',standoff:8},
+             zeroline:true, zerolinecolor:GRID, zerolinewidth:1 },
+    legend: LEG, hovermode:'x unified',
+    shapes:[{ type:'line', x0:c.months[0], x1:c.months[c.months.length-1],
+              y0:0, y1:0, line:{dash:'dot',color:'#94a3b8',width:1} }],
+  }, CFG);
+
+  Plotly.react('chart-cbdc-type', [
+    { x: c.months, y: c.type_retail.map(v=>+(v*100).toFixed(1)),    name:'Retail',    type:'scatter', mode:'lines', line:{color:'#4f46e5',width:2} },
+    { x: c.months, y: c.type_wholesale.map(v=>+(v*100).toFixed(1)), name:'Wholesale', type:'scatter', mode:'lines', line:{color:'#d97706',width:2} },
+    { x: c.months, y: c.type_general.map(v=>+(v*100).toFixed(1)),   name:'General',   type:'scatter', mode:'lines', line:{color:'#16a34a',width:2} },
+  ], {
+    ...BASE,
+    xaxis: { ...AX },
+    yaxis: { ...AX, ticksuffix:'%', range:[0,102], title:{text:'% sentences',standoff:8} },
+    legend: LEG, hovermode:'x unified',
+  }, CFG);
+
+  Plotly.react('chart-cbdc-disc', [
+    { x: c.months, y: c.disc_feat.map(v=>+(v*100).toFixed(1)), name:'Features',     type:'scatter', mode:'lines', line:{color:'#7c3aed',width:2} },
+    { x: c.months, y: c.disc_proc.map(v=>+(v*100).toFixed(1)), name:'Process',      type:'scatter', mode:'lines', line:{color:'#0891b2',width:2} },
+    { x: c.months, y: c.disc_risk.map(v=>+(v*100).toFixed(1)), name:'Risk-Benefit', type:'scatter', mode:'lines', line:{color:'#dc2626',width:2} },
+  ], {
+    ...BASE,
+    xaxis: { ...AX },
+    yaxis: { ...AX, ticksuffix:'%', range:[0,102], title:{text:'% sentences',standoff:8} },
+    legend: LEG, hovermode:'x unified',
+  }, CFG);
+}
+
+// ── CSV download ─────────────────────────────────────────────────────────────
+function downloadCSV(section) {
+  let csv = '', filename = '';
+  if (section === 'buckets') {
+    const asset = document.getElementById('bucket-asset').value;
+    const d = CHART_DATA.buckets[asset];
+    const groups = ['< $10k', '$10k – $100k', '> $100k'];
+    csv = 'month,total_bn_usd,' + groups.join(',') + '\n';
+    d.months.forEach((m,i) => {
+      csv += [m, d.total_bn[i], ...groups.map(g => d[g] ? d[g][i] : '')].join(',') + '\n';
+    });
+    filename = 'trade_buckets_' + asset + '.csv';
+  } else if (section === 'factor') {
+    csv = 'date,pc1,pc1_cumulative\n';
+    const f = CHART_DATA.factor;
+    f.dates.forEach((d,i) => { csv += [d,f.pc1[i],f.pc1_cum[i]].join(',') + '\n'; });
+    filename = 'common_factor_pc1.csv';
+  } else if (section === 'fifff') {
+    csv = 'month,fi_share,ff_share,stable_share,n_assets\n';
+    const d = CHART_DATA.fifff;
+    d.months.forEach((m,i) => {
+      csv += [m,d.fi[i],d.ff[i],d.stable[i],d.n_assets[i]].join(',') + '\n';
+    });
+    filename = 'fi_ff_share.csv';
+  } else if (section === 'cbdc') {
+    csv = 'month,jev_stance,jev_sentiment,pro_pct,anti_pct,wait_pct,n_speeches\n';
+    const c = CHART_DATA.cbdc;
+    c.months.forEach((m,i) => {
+      csv += [m,c.stance[i],c.sentiment[i],c.pro_pct[i],c.anti_pct[i],c.wait_pct[i],c.n_speeches[i]].join(',') + '\n';
+    });
+    filename = 'cbdc_sentiment_monthly.csv';
+  }
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+</script>
+</body>
+</html>
