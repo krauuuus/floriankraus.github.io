@@ -6,7 +6,7 @@
 <title>Research Data — Florian Kraus</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
-<script src="data.js"></script>
+<script src="data.js?v=3"></script>
 <style>
 :root {
   --bg:#ffffff; --surface:#f8fafc; --accent:#4f46e5; --text:#0f172a;
@@ -435,14 +435,14 @@ function renderCbdc() {
 
   // Chart 1: Jev model
   Plotly.react('chart-cbdc-jev', [
-    {x:c.months, y:c.stance,    name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:2}},
-    {x:c.months, y:c.sentiment, name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:2}},
+    {x:c.months, y:c.stance,    name:'Stance',    type:'scatter', mode:'lines', connectgaps:true, line:{color:'#dc2626',width:2}},
+    {x:c.months, y:c.sentiment, name:'Sentiment', type:'scatter', mode:'lines', connectgaps:true, line:{color:'#2563eb',width:2}},
   ], {...BASE, xaxis:{...AX}, yaxis:scoreAxis, legend:LEG, hovermode:'x unified', shapes:[zeroShape]}, CFG);
 
   // Chart 2: BERT model
   Plotly.react('chart-cbdc-bert', [
-    {x:c.months, y:c.bert_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:2}},
-    {x:c.months, y:c.bert_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:2}},
+    {x:c.months, y:c.bert_stance, name:'Stance',    type:'scatter', mode:'lines', connectgaps:true, line:{color:'#dc2626',width:2}},
+    {x:c.months, y:c.bert_sent,   name:'Sentiment', type:'scatter', mode:'lines', connectgaps:true, line:{color:'#2563eb',width:2}},
   ], {...BASE, xaxis:{...AX}, yaxis:scoreAxis, legend:LEG, hovermode:'x unified', shapes:[zeroShape]}, CFG);
 
   // Chart 3: Discourse breakdown (BERT) — 3 separate facet panels
@@ -450,16 +450,16 @@ function renderCbdc() {
                     xaxis:{...AX}, yaxis:{...AX, range:[-1.05,1.05], zeroline:false},
                     hovermode:'x unified', showlegend:false, shapes:[zeroShape]};
   Plotly.react('chart-disc-feat', [
-    {x:c.months, y:c.disc_feat_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:1.5}},
-    {x:c.months, y:c.disc_feat_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:1.5}},
+    {x:c.months, y:c.disc_feat_stance, name:'Stance',    type:'scatter', mode:'lines', connectgaps:true, line:{color:'#dc2626',width:1.5}},
+    {x:c.months, y:c.disc_feat_sent,   name:'Sentiment', type:'scatter', mode:'lines', connectgaps:true, line:{color:'#2563eb',width:1.5}},
   ], discBase, CFG);
   Plotly.react('chart-disc-proc', [
-    {x:c.months, y:c.disc_proc_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:1.5}},
-    {x:c.months, y:c.disc_proc_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:1.5}},
+    {x:c.months, y:c.disc_proc_stance, name:'Stance',    type:'scatter', mode:'lines', connectgaps:true, line:{color:'#dc2626',width:1.5}},
+    {x:c.months, y:c.disc_proc_sent,   name:'Sentiment', type:'scatter', mode:'lines', connectgaps:true, line:{color:'#2563eb',width:1.5}},
   ], discBase, CFG);
   Plotly.react('chart-disc-risk', [
-    {x:c.months, y:c.disc_risk_stance, name:'Stance',    type:'scatter', mode:'lines', line:{color:'#dc2626',width:1.5}},
-    {x:c.months, y:c.disc_risk_sent,   name:'Sentiment', type:'scatter', mode:'lines', line:{color:'#2563eb',width:1.5}},
+    {x:c.months, y:c.disc_risk_stance, name:'Stance',    type:'scatter', mode:'lines', connectgaps:true, line:{color:'#dc2626',width:1.5}},
+    {x:c.months, y:c.disc_risk_sent,   name:'Sentiment', type:'scatter', mode:'lines', connectgaps:true, line:{color:'#2563eb',width:1.5}},
   ], discBase, CFG);
 }
 
