@@ -1,0 +1,588 @@
+---
+title: "Notebook R: manipulation de données avec R"
+output: html_notebook
+---
+
+*Note:* vous n'êtes pas obligé d'exécuter l'entièreté du code: il suffit en théorie de lire pour comprendre (dans l'idéal). 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+require(tidyverse)
+
+jst <- read_excel("data_schularick.xlsx")
+
+```
+
+
+# Les trois structures de données
+
+En économétrie empirique, la structure des données détermine les méthodes
+d'estimation disponibles. On distingue trois types fondamentaux.
+
+| Type | Unités | Périodes | Exemple |
+|------|--------|----------|-------------|
+| Cross-section | plusieurs | **une seule** | 17 pays en 2000 |
+| Série temporelle | **une seule** | plusieurs | France, 1870–2020 |
+| Panel | plusieurs | plusieurs | 17 pays, 1870-2020 |
+
+```{r, echo=FALSE}
+tibble(
+  Type = c("Cross-section", "Série temporelle", "Panel"),
+  Unités = c("plusieurs", "une seule", "plusieurs"),
+  Périodes = c("une seule", "plusieurs", "plusieurs"),
+  `Méthode typique` = c(
+    "OLS, régression cross-country",
+    "ARMA, MCE, VAR",
+    "Effets fixes, GMM"
+  )
+)
+```
+
+## Cross-section
+Une **cross-section** est une photographie à un instant donné : on observe
+plusieurs unités (pays, entreprises, individus) pour **une seule période**.
+
+Ce type de données permet notamment de comparer des individus entre eux, comme par exemple le PIB réel par habitant en 2000:
+
+```{r, echo=FALSE}
+cs <- jst %>% filter(year == 2000) %>% select(country, year, rgdpmad)
+
+head(cs)
+```
+
+
+
+```{r, echo=FALSE}
+ggplot(cs, aes(x = reorder(country, rgdpmad), y = rgdpmad)) +
+  geom_col(fill = "#4f46e5", alpha = 0.8) +
+  coord_flip() +
+  labs(
+    title = "PIB réel par habitant en 2000",
+    x = "", y = "PIB réel (USD 2011)"
+  ) +
+  theme_minimal()
+```
+
+
+
+
+
+
+# Série temporelle
+
+Une **série temporelle** suit **une seule unité** sur plusieurs périodes.
+On s'intéresse à l'évolution dans le temps.
+
+```{r echo=FALSE}
+ts_fra <- jst %>% filter(iso == "FRA") %>% select(country, year, rgdpmad)
+
+ts_fra
+```
+
+
+```{r, echo=FALSE}
+ggplot(ts_fra, aes(x = year, y = rgdpmad)) +
+  geom_line(color = "#4f46e5", linewidth = 1) +
+  labs(
+    title = "PIB réel par habitant — France",
+    x = "", y = "PIB réel (USD 2011)"
+  ) +
+  theme_minimal()
+```
+
+Ce genre de données sert notamment à modéliser la dynamique temporelle, et à explorer ce qui explique sa variation pour un individu donné.
+
+
+
+# Panel
+
+Un **panel** combine les deux dimensions : plusieurs unités observées sur
+plusieurs périodes. 
+
+```{r, echo=FALSE}
+# Aperçu de la structure panel : pays × année
+jst %>%
+  select(iso, country, year, rgdpmad) %>%
+  arrange(year)
+```
+
+
+```{r, echo=FALSE}
+pays_sel <- c("FRA", "DEU", "USA", "GBR", "JPN")
+
+jst %>%
+  filter(iso %in% pays_sel, year >= 1950) |>
+  ggplot(aes(x = year, y = rgdpmad, color = country)) +
+  geom_line(linewidth = 0.8) +
+  labs(
+    title = "PIB réel pour quelques pays selectionnés",
+    x = "", y = "PIB réel", color = ""
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+
+# Les données dans R
+
+## Les calculs simples
+
+```{r}
+1+1
+2*2
+10/5
+```
+
+
+## Créer des objets dans R
+
+```{r}
+a <- 2*2
+
+b  <- 10/5
+
+a+b
+```
+
+```{r}
+vecteur <- c(1,4,7,9,19)
+
+vecteur
+```
+
+
+## Importer des données
+
+```{r}
+donnees <- read_excel("CHEMIN_DU_DOSSIER.xlsx")
+donnees_csv <- read.csv("CHEMIN_DU_DOSSIER")
+```
+
+## Les packages 
+
+```{r}
+#install.packages("nom_du_package")
+#require(nom_du_package)
+
+# Par exemple:
+install.packages("fixest")
+require(fixest)
+```
+Ce que je préfère utiliser, c'est le package `pacman` qui permet d'installer les packages ainsi que toutes les dépendences (les autres packages utilisés par le package) de manière simple et rapide. Il suffit de copier coller ce code, et remplacer les packages à l'intérieur:
+
+```{r}
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+
+pacman::p_load(
+  tidyverse, 
+  readr, readxl,
+  zoo,
+  fixest, patchwork
+)
+```
+
+(et ça ne charge/installe pas les packages déjà chargés/installés)
+
+
+# Manipuler des données
+
+
+
+## Filtrer en fonction d'un critère
+
+```{r}
+objet %>%
+  filter(nom_colonne < critere)
+```
+
+Exemple:
+
+```{r}
+jst %>%
+  filter(year >= 1950)
+
+jst %>%
+  filter(country == "France")
+```
+
+
+## Selectionner seulement certaines colonnes (ou lignes)
+
+```{r}
+objet[numero_ligne , numero_colonne]
+```
+
+
+```{r}
+objet[, numero_colonne]
+```
+
+
+```{r}
+objet[, "nom_colonne"]
+```
+
+
+```{r}
+objet$nom_colonne
+```
+
+
+```{r}
+objet %>% select(nom_colonne)
+```
+
+
+Exemples:
+```{r}
+jst[, 1] # selectionner la colonne 1 de l'objet jst
+jst[2, 7] # selectionner la cellule en ligne 2, colonne 7 de l'objet jst
+
+jst[, "year"] # selectionner la colonne nommée "year" dans l'objet jst
+
+jst$year
+
+jst %>% select(year)
+
+
+```
+
+
+
+## Créer une nouvelle colonne
+
+```{r}
+objet %>%
+  mutate(nouvelle_colonne = nom_colonne1 * nom_colonne2)
+```
+
+
+Exemple:
+
+```{r}
+jst %>%
+  select(iso, country, year, rgdpmad) %>%
+  mutate(log_rgdpmad = log(rgdpmad))
+```
+
+
+# Changer le format des données
+
+## De panel à série temporelle
+Pour rappel, une base de données en panel contient les observations temporelles pour **plusieurs** individus, tandis qu'une base en série temporelle contient les observations temporelles pour un seul individu. Passer d'une base en panel à une base en série temporelle revient donc à ne sélectionner qu'un seul individu dans la base de données:
+```{r}
+serie_temporelle <- panel %>% 
+  filter(individu == "Individu_1")
+```
+
+Par exemple, si on souhaite garder la France uniquement:
+
+```{r}
+serie_temporelle_France <- jst %>%
+  filter(country == "France")
+
+head(serie_temporelle_France)
+```
+
+
+## De plusieurs séries temporelles à un panel
+
+On a souvent la situation inverse: on a une base de données qui contient plusieurs séries temporelles, souvent dans un format qu'on appelle *wide*. Par exemple, on peut avoir récolté des données de PIB par tête pour plusieurs pays, et chaque pays est contenu dans une colonne différente 
+### Le format wide
+**Wide** — une ligne par pays x année, une colonne par variable :
+
+
+Exemple:
+```{r, echo=FALSE}
+long <- jst %>%
+  filter(year >= 2007, year <= 2009) |>
+  select(country, year, rgdpmad)
+
+
+wide <- long %>%
+  pivot_wider(
+    names_from  = "country",
+    values_from = "rgdpmad"
+  )
+
+wide
+```
+
+Il faut donc simplifier cette base de donnée pour la transformer en panel, ce qui revient à passer d'un format *wide* à un format *long*
+
+### Le format long
+
+**Long** — une ligne par pays × année × variable :
+
+```{r}
+long <- jst %>%
+  filter(year >= 2007, year <= 2009) |>
+  select(country, year, rgdpmad)
+
+long
+```
+
+
+
+### Passer du format wide au format long
+
+De wide vers long
+```{r}
+long <- wide |>
+  pivot_longer(
+    cols      = -c(year), # enlever la colonne year des colonnes à reformatter
+    names_to  = "variable",
+    values_to = "GDP"
+  )
+```
+
+de long vers wide 
+```{r}
+wide <- long |>
+   pivot_wider(
+    names_from  = "variable",
+    values_from = "GDP"
+  )
+```
+
+
+
+# Combiner des données
+Souvent, on a des données qui proviennent de plusieurs sources, qu’on aimerait combiner en une seule base de données pour pouvoir faire des estimations.
+
+Il existe plusieurs moyens de le faire :
+`full_join()`, `inner_join()`, `left_join()` et `right_join`, la différence entre chaque fonction réside dans les données qu'on souhaite garder à la fin si les objets n'ont pas la même longueur.
+
+Par exemple, imaginons 2 bases de données de séries temporelles pour la France, une première qui contient l'évolution du taux de chômage depuis 2017, une deuxième qui contient l'évolution de l'indice des salaires depuis 2015.
+
+```{r}
+objet1 <- jst %>%
+  filter(country=="France")%>%
+  filter(year >=2017)%>%
+  select(year, unemp)
+
+objet2 <- jst %>%
+  filter(country=="France")%>%
+  filter(year >=2015 & year <= 2019)%>%
+  select(year, wage)
+
+objet1
+objet2
+  
+```
+La question est de savoir: quelles données ont garde ? Toutes les observations depuis 2015, même si les données de chômage ne sont disponibles qu'à partir de 2017 ? Ou seulement celles après 2017 ? 
+
+- `full_join()` va garder toutes les observations ;
+- `inner_join()` ne va garder que les observations communes aux deux bases ;
+- `left_join()` va aligner les observations sur l'objet à gauche de la pipe (%>%)
+- `right_join()` va aligner les observations sur l'objet à droite de la pipe (%>%)
+
+En arguments à l'intérieur de chaque fonction, il faut également préciser quelle est la colonne pivot, la colonne commune aux deux objets qui sert à les combiner. En l'occurence, ici c'est la colonne `year`.
+
+```{r}
+objet_full <- objet1%>%
+  full_join(objet2, by="year")%>%
+  arrange(year)
+
+objet_full
+```
+Ici, on utilise `full_join()`, donc on garde toutes les observations pour les deux objets. 
+
+A contrarion, `inner_join()` ne va garder que ce qui est commun aux deux objets:
+```{r}
+objet_inner <- objet1%>%
+  inner_join(objet2, by="year")
+
+objet_inner
+```
+
+La fonction `left_join()` va aligner les observations sur les données à gauche de la pipe, en l'occurence le taux de chômage
+```{r}
+objet_left <- objet1%>%
+  left_join(objet2, by="year")
+
+objet_left
+```
+
+ Enfin, la fonction `right_join()` va aligner les observations sur les données à droite de la pipe, en l'occurence le salaire
+```{r}
+objet_right <- objet1%>%
+  right_join(objet2, by="year")
+
+objet_right
+```
+ 
+
+# Régressions
+On ne va pas tant s'intéresser à la théorie économétrique dans le cadre des régressions linéaires ici, et se concentrer davantage sur le code et son interprétation.
+
+On va prendre un cas d'application typique: la courbe de Phillips. 
+
+Une hausse du taux de chômage réduit la capacité des travailleurs à demander des hausses de salaire car ils sont remplaçables. Comme il n'y a pas de hausse de salaire, les prix n'augmentent pas car ils ne sont pas alimentés par la hausse des coûts lié au facteur travail. 
+La courbe de Phillips prédit donc une relation négative et significative entre inflation et chômage, et notamment une causalité de chômage vers inflation : une hausse du taux de chômage est supposée liée à une diminution de l'inflation. 
+
+Autrement dit, avec le modèle de régression suivant:
+$$
+Inflation_t = \alpha + \beta. Unemployment_t + \varepsilon_t
+$$
+On s'attends à $\beta < 0 $.
+
+
+## En séries temporelles
+
+```{r}
+donnees_france <- jst %>%
+  filter(country=="France")%>%
+  filter(year >=1949)%>%
+  select(year, unemp, cpi)%>%
+  mutate(inflation = c(NA, diff(log(cpi))*100))%>%
+  na.omit()
+  
+```
+
+
+### Stationnarité
+La première étape en séries temporelles, après avoir vérifié tout ce qui concerne les statistiques descriptives, l'absence d'outliers etc... est que les données sont stationnaires. Pour cela, on peut utiliser la fonction `adf.test()` qui a pour hypothèse nulle (H0) l'absence de stationnarité, et l'hypothèse alternative (H1) la stationnarité de la série. Autrement dit, si la p-value du test est significative (<0.05), alors on peut considérer que la série est stationnaire. Si elle ne l'est pas, on devra utiliser la série en différence.
+```{r}
+require(tseries)
+adf.test(donnees_france$inflation)
+adf.test(donnees_france$unemp)
+```
+Dans les deux cas, la p-value n'est pas significative, donc on ne peut pas rejetter l'hypothèse nulle de non-stationnarité. Autrement dit, les deux séries sont non-stationnaires. Il convient alors de les transformer en différence, et de vérifier que ces séries sont stationnaire en différence.
+
+```{r}
+donnees_france2 <- donnees_france %>%
+  mutate(dinflation = c(NA, diff(inflation)))%>%
+  mutate(dunemp = c(NA, diff(unemp)))%>%
+  na.omit()
+
+adf.test(donnees_france2$dinflation)
+adf.test(donnees_france2$dunemp)
+```
+Ici, on voit que `dinflation` (la série d'inflation en différence première) est stationnaire. En revanche, `dunemp` (la série de chômage en différence première) n'est toujours pas stationnaire. Il faut donc la transformer une deuxième fois en différence:
+
+```{r}
+donnees_france3 <- donnees_france2 %>%
+  mutate(ddunemp = c(NA, diff(dunemp)))%>%
+  na.omit()
+
+adf.test(donnees_france3$ddunemp)
+```
+La série `ddunemp` (la série de chômage en deuxième différence) est stationnaire. On peut donc effectuer la régression suivante:
+
+$$
+\Delta Inflation_t = \alpha + \beta \Delta ^2 Unemp_t + \varepsilon_t
+$$
+où $\Delta Inflation_t$ correspond à `dinflation` et $\Delta^2 Unemp_t$ correspond à `ddunemp`
+
+### Régression en série temporelle
+Deux fonctions permettent de donner le même résultat
+- `lm()` est la fonction de base dans R. 
+- `feols()` du package `fixest` est la fonction a l'origine faite pour faire des régressions en panel, mais marche également pour des séries temporelles. Le passage de séries temporelles à panel sera plus simple si vous êtes à l'aise avec cette fonction d'une part. D'autre part, `feols()` est plus souple, on peut modifier davantage de choses pour faire des sorties propres. 
+```{r}
+regression_lm <- lm(dinflation ~ ddunemp, data= donnees_france3)
+summary(regression_lm)
+```
+```{r}
+require(fixest)
+regression_feols <- feols(dinflation ~ ddunemp, data=donnees_france3)
+etable(regression_feols)
+```
+Ici, on peut voir que 
+- La constante (notée $\alpha$ plus haut) est égale à -0.2171
+- Le coefficient associé à `ddunemp` (noté $\beta$ plus haut) est égal à -0.1898, signifiant qu'une hausse d'une unité de `ddunemp` est associée à une diminution de 0.1898 unités de `dinflation`. En revanche, ce coefficient n'est pas significatif (la significativité s'observe avec des * à coté du coefficient). Autrement dit : la relation entre inflation est chômage n'est pas significativement différente de zéro, il n'y a pas de lien entre inflation et chômage. C'est relativement cohérent avec ce qui est observé dans la littérature récente.
+
+Visuellement, effectuer une régression linéaire revient à tracer une fonction affine de type 
+$$Y= ax + b$$
+Où $b$ correspond à l'ordonnée à l'origine ($\alpha$ dans le modèle économétrique), et $a$ correspond au coefficient directeur ($\beta$ dans le modèle). On peut tracer ce graphique:
+```{r}
+ggplot(donnees_france3, aes(x=ddunemp, y=dinflation))+
+  geom_point()+
+  geom_smooth(method="lm")
+```
+On observe bien que la droite de régression ne semble pas augmenter ou diminuer en fonction des valeurs, donc il ne semble pas y avoir de relation entre les deux variables.
+
+- Le $R^2$ du modèle est très faible, proche de 0 (voire même négatif si on regarde le $R^2$ ajusté), ce qui signifie qu'on explique une très faible part de la variance de `dinflation`. Il faudrait éventuellement rajouter des variables dans le modèle.  
+
+
+
+### Analyse des résidus
+Une bonne partie des régressions concerne la vérification a posteriori, qui vise a examiner les résidus du modèle, ou la partie inexpliquée par les variables explicatives. On peut dans un premier temps extraire les résidus avec la fonction `residuals()`.
+```{r}
+residus_ST <- residuals(regression_feols)
+
+residus_ST
+```
+et effectuer les différents tests sur les résidus qui conviennent. 
+
+## Régressions en panel
+
+La principale différence avec les données de séries temporelles est que lorsqu'on manipule les données, il faut faire attention à ne pas appliquer une commande qui s'applique **entre** les individus. Par exemple, la fonction `group_by(individus)` va s'assurer que la commande `lag()` ou `diff()` va s'appliquer uniquement sur les valeurs d'un individu à la fois (au lieu de faire la différence entre la première valeur de l'individu2 et la dernière valeur de l'individu1, ce qui n'a pas de sens).
+
+(Par simplicité de visualisation, on ne va garder que quelques pays dans l'ensemble de la base de données en filtrant (avec `filter()` et l'argument `%in% c()` qui ne garde que les éléments qui sont dans l'argument `c()`)).
+```{r}
+donnees_panel <- jst %>%
+  filter(year >=1949)%>%
+  filter(country %in% c("France", "Australia", "Germany", "USA", "Japan"))%>%
+  select(year, country, unemp, cpi)%>% # on garde également la colonne country
+  group_by(country)%>% # On veut appliquer la fonction diff() pour calculer l'inflation pour chaque pays de manière séparée
+  mutate(inflation = c(NA, diff(log(cpi))*100))%>%
+  ungroup()%>%
+  na.omit()
+donnees_panel
+```
+
+### Des régressions en série temporelles aux regressions en panel
+On a vu pour les séries temporelles qu'effectuer une régression en série temporelle pouvait se visualiser sur un plan où la variable X est en abscisse, et Y en ordonnée. C'est la même chose en panel. Par exemple:
+
+```{r}
+donnees_panel %>% ggplot(aes(x=unemp, y=inflation))+
+  geom_point()+
+  geom_smooth(method="lm")
+```
+Ici, on a effectué la même chose: une régression sur l'ensemble des points de manière indifférente. 
+En revanche, il peut y avoir une certaine heterogénéité entre les individus. Si on ajoute une couleur différente pour chaque pays:
+```{r}
+donnees_panel %>% ggplot(aes(x=unemp, y=inflation))+
+  geom_point(aes(color=country))+
+  geom_smooth(method="lm")
+```
+Ici on voit bien que certains pays sont regroupés à droite, d'autres plutôt à gauche. Si on effectuait des régressions en série temporelle pour chaque pays de manière individuelle, on aurait quelque chose du genre:
+
+```{r}
+donnees_panel %>% ggplot(aes(x=unemp, y=inflation, color=country))+
+  geom_point()+
+  geom_smooth(method="lm", se=F)
+```
+Ici, chaque droite représente le coefficient de régression linéaire pour chaque pays. 
+
+A noter que, contrairement au modèle en série temporelle, on ne s'intéresse pas ici à la question de la stationnarité, grâce à la présence d'effets fixes (temporels notamment) qui vont capter l'effet des éléments communs à tous les individus et qui évoluent dans le temps, précisément ce que cherche à régler la stationnarisation. 
+
+### Regressions
+Une régression en panel prend généralement la forme suivante:
+$$
+Y_{i,t} = \alpha_i + \alpha_t + \beta X_{i,t} + \varepsilon_{i,t}
+$$
+
+Où $Y$, $X$ et $\varepsilon$ sont indexés par $i$ (les individus) et $t$ (le temps), et $\alpha_i$ et $\alpha_t$ sont respectivement les effets fixes individuels et temporels.
+
+Dans notre cas ici de la courbe de Phillips, le modèle peut être écrit:
+$$
+Inflation_{i,t} = \alpha_i + \alpha_t + \beta Unemployment_{i,t}+ \varepsilon_{i,t}
+$$
+Concrètement, la fonction `feols()` est la même que celle utilisée pour la série temporelle plus haut, mais on peut rajouter les effets fixes après uen barre verticale (alt gr + 6 sur les claviers):
+```{r}
+regression_panel <- feols(inflation ~ unemp | country + year, data=donnees_panel)
+etable(regression_panel)
+```
+
+Ici, on observe le même résultat qu'en série temporelle: la courbe de Phillips n'est pas valide pour les pays de notre sample depuis 1950. 
+
+
+
+
+
